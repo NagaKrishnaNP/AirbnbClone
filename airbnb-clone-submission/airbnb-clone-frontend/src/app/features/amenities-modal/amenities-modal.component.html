@@ -1,0 +1,25 @@
+<div class="modal-backdrop" (click)="onClose()">
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="All amenities"
+    (click)="$event.stopPropagation()"
+  >
+    <button #closeButton class="modal__close" type="button" (click)="onClose()" aria-label="Close">
+      <app-icon name="close" [size]="16"></app-icon>
+    </button>
+
+    <div class="modal__body">
+      <section class="modal__group" *ngFor="let group of groups()">
+        <h3 class="modal__group-title">{{ group.category }}</h3>
+        <div class="modal__item" *ngFor="let item of group.items">
+          <span class="modal__item-icon" [class.modal__item-icon--unavailable]="!item.available">
+            <app-icon [name]="item.available ? 'grid' : 'close'" [size]="18"></app-icon>
+          </span>
+          <span [class.modal__item-label--unavailable]="!item.available">{{ item.label }}</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

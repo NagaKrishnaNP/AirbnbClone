@@ -1,0 +1,45 @@
+<div
+  class="lightbox"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="(gallery.activePhoto()?.room ?? 'Photo') + ', photo ' + (gallery.activeIndex() + 1) + ' of ' + gallery.totalPhotos()"
+>
+  <button #closeButton class="icon-button lightbox__close" type="button" (click)="close()" aria-label="Close photo">
+    <app-icon name="close" [size]="20"></app-icon>
+  </button>
+
+  <span class="lightbox__counter">{{ gallery.activeIndex() + 1 }} / {{ gallery.totalPhotos() }}</span>
+
+  <button
+    class="lightbox__nav lightbox__nav--prev"
+    type="button"
+    (click)="prev()"
+    aria-label="Previous photo"
+    [disabled]="gallery.totalPhotos() <= 1"
+  >
+    <app-icon name="chevron-left" [size]="22"></app-icon>
+  </button>
+
+  <div class="lightbox__stage">
+    <img
+      *ngIf="gallery.activePhoto() as photo"
+      [src]="photo.url"
+      [alt]="photo.room"
+      class="lightbox__image"
+    />
+  </div>
+
+  <button
+    class="lightbox__nav lightbox__nav--next"
+    type="button"
+    (click)="next()"
+    aria-label="Next photo"
+    [disabled]="gallery.totalPhotos() <= 1"
+  >
+    <app-icon name="chevron-right" [size]="22"></app-icon>
+  </button>
+
+  <p class="lightbox__caption" *ngIf="gallery.activePhoto() as photo">
+    {{ photo.room }} — {{ photo.caption }}
+  </p>
+</div>

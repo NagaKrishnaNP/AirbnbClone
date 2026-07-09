@@ -1,0 +1,116 @@
+.calendar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  position: relative;
+}
+
+.calendar__month {
+  flex: 1;
+  min-width: 280px;
+}
+
+.calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.calendar__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.calendar__nav {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-round);
+  background: var(--color-white);
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--color-border-light);
+  }
+}
+
+.calendar__nav-spacer {
+  width: 32px;
+  height: 32px;
+}
+
+.calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: var(--space-2);
+
+  span {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-foggy);
+  }
+}
+
+.calendar__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar__day {
+  aspect-ratio: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  border-radius: var(--radius-round);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+
+  &:hover:not(:disabled) {
+    background: var(--color-border-light);
+  }
+
+  &--muted {
+    visibility: hidden;
+  }
+
+  &--disabled {
+    color: var(--color-border);
+    text-decoration: line-through;
+    cursor: default;
+  }
+
+  &--in-range {
+    background: var(--color-border-light);
+    border-radius: 0;
+  }
+
+  &--start,
+  &--end {
+    background: var(--color-hof);
+    color: var(--color-white);
+    font-weight: 600;
+  }
+}
+
+.calendar__clear {
+  position: absolute;
+  bottom: -40px;
+  left: 0;
+  background: none;
+  border: 1px solid var(--color-hof);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+
+  &:hover {
+    background: var(--color-border-light);
+  }
+}

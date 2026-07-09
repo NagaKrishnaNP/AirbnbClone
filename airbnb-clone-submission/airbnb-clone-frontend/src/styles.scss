@@ -1,0 +1,120 @@
+/* ==========================================================================
+   Global design tokens
+   Airbnb's real listing pages use their proprietary "Circular" typeface,
+   which isn't publicly licensed — Inter is used here as the closest
+   free metric-compatible stand-in (similar x-height / grotesque shape).
+   ========================================================================== */
+:root {
+  /* Color palette (matches Airbnb's production tokens) */
+  --color-rausch: #ff385c;       /* primary brand / CTA */
+  --color-rausch-dark: #d70466;
+  --color-hof: #222222;          /* primary text */
+  --color-foggy: #717171;        /* secondary text */
+  --color-border: #dddddd;
+  --color-border-light: #ebebeb;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-overlay: rgba(0, 0, 0, 0.85);
+  --color-focus: #222222;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-round: 50%;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Shadows */
+  --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-popover: 0 2px 16px rgba(0, 0, 0, 0.18);
+
+  /* Layout */
+  --content-max-width: 1120px;
+  --header-height: 80px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-hof);
+  background: var(--color-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Visible focus ring for keyboard users, hidden for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Utility: visually-hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Shared scale-in/out used by overlays */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheet-slide-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

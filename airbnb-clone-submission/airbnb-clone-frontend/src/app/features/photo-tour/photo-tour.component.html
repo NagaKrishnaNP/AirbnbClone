@@ -1,0 +1,50 @@
+<div class="photo-tour" role="dialog" aria-modal="true" aria-label="All photos">
+
+  <header class="photo-tour__header">
+    <button #closeButton class="icon-button" type="button" (click)="close()" aria-label="Close photo tour">
+      <app-icon name="close" [size]="18"></app-icon>
+    </button>
+
+    <nav class="photo-tour__thumb-nav" aria-label="Jump to room">
+      <button
+        class="photo-tour__thumb"
+        type="button"
+        *ngFor="let photo of roomThumbnails()"
+        (click)="scrollToRoom(photo.id)"
+      >
+        <img [src]="photo.url" [alt]="photo.room" />
+        <span>{{ photo.room }}</span>
+      </button>
+    </nav>
+  </header>
+
+  <div class="photo-tour__scroll" #scrollRoot>
+    <div
+      class="photo-tour__section"
+      *ngFor="let group of roomGroups()"
+      [attr.data-photo-id]="group.photos[0].id"
+    >
+      <h2 class="photo-tour__room">{{ group.room }}</h2>
+      <p class="photo-tour__caption">{{ group.caption }}</p>
+
+      <button
+        class="photo-tour__image-button photo-tour__image-button--primary"
+        type="button"
+        (click)="openPhotoInLightbox(group.photos[0].globalIndex)"
+      >
+        <img [src]="group.photos[0].url" [alt]="group.room" loading="lazy" />
+      </button>
+
+      <div class="photo-tour__secondary-grid" *ngIf="group.photos.length > 1">
+        <button
+          class="photo-tour__image-button"
+          type="button"
+          *ngFor="let photo of group.photos.slice(1)"
+          (click)="openPhotoInLightbox(photo.globalIndex)"
+        >
+          <img [src]="photo.url" [alt]="group.room" loading="lazy" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

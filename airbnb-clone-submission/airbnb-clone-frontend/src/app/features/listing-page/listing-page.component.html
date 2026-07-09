@@ -1,0 +1,476 @@
+<ng-container *ngIf="loading()">
+  <div class="state-message">Loading listing…</div>
+</ng-container>
+
+<ng-container *ngIf="error()">
+  <div class="state-message state-message--error">{{ error() }}</div>
+</ng-container>
+
+<main class="page" *ngIf="listing() as l">
+
+  <!-- Sticky sub-nav, appears once scrolled past the hero grid -->
+  <header class="sticky-nav" [class.sticky-nav--visible]="isStickyNavVisible()">
+    <nav class="sticky-nav__tabs">
+      <button
+        class="sticky-nav__tab"
+        type="button"
+        [class.sticky-nav__tab--active]="activeTab() === 'photos'"
+        (click)="selectTab('photos')"
+      >
+        Photos
+      </button>
+      <button
+        class="sticky-nav__tab"
+        type="button"
+        [class.sticky-nav__tab--active]="activeTab() === 'amenities'"
+        (click)="selectTab('amenities')"
+      >
+        Amenities
+      </button>
+      <button
+        class="sticky-nav__tab"
+        type="button"
+        [class.sticky-nav__tab--active]="activeTab() === 'reviews'"
+        (click)="selectTab('reviews')"
+      >
+        Reviews
+      </button>
+      <button
+        class="sticky-nav__tab"
+        type="button"
+        [class.sticky-nav__tab--active]="activeTab() === 'location'"
+        (click)="selectTab('location')"
+      >
+        Location
+      </button>
+    </nav>
+
+    <div class="sticky-nav__booking">
+      <div class="sticky-nav__price">
+        <span class="sticky-nav__price-amount">{{ formattedTotalPrice() }}</span>
+        <span>for {{ nights() }} nights</span>
+        <span class="sticky-nav__rating"><app-icon name="star" [size]="11"></app-icon> {{ l.rating.toFixed(2) }} &middot; {{ l.reviewCount }} reviews</span>
+      </div>
+      <div class="sticky-nav__reserve-wrap">
+        <button class="reserve-button reserve-button--compact" type="button" (click)="onReserveClick()">Reserve</button>
+        <span class="reserve-tooltip" *ngIf="isReserveTooltipVisible()">You won't be charged yet</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="page__inner">
+
+    <!-- Title row -->
+    <header class="title-row">
+      <h1 class="title-row__title">{{ l.title }}</h1>
+      <div class="title-row__actions">
+        <button class="text-action" type="button">
+          <app-icon name="share" [size]="16"></app-icon>
+          <span>Share</span>
+        </button>
+        <button
+          class="text-action"
+          type="button"
+          (click)="toggleSaved()"
+          [attr.aria-pressed]="isSaved()"
+        >
+          <app-icon [name]="isSaved() ? 'heart-filled' : 'heart'" [size]="16" [class.text-action__icon--saved]="isSaved()"></app-icon>
+          <span>Save</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero photo grid -->
+    <section class="hero-grid" aria-label="Listing photos" #photosSection>
+      <button
+        class="hero-grid__main"
+        type="button"
+        (click)="openPhotoTour()"
+        [attr.aria-label]="'Open photo tour, photo 1 of ' + heroPhotos().length"
+      >
+        <img [src]="heroPhotos()[0]?.url" [alt]="heroPhotos()[0]?.room" loading="eager" />
+      </button>
+
+      <div class="hero-grid__side">
+        <button
+          class="hero-grid__tile"
+          type="button"
+          *ngFor="let photo of heroPhotos().slice(1); let i = index"
+          (click)="openPhotoTour()"
+          [attr.aria-label]="'Open photo tour, photo ' + (i + 2) + ' of ' + heroPhotos().length"
+        >
+          <img [src]="photo.url" [alt]="photo.room" loading="lazy" />
+        </button>
+      </div>
+
+      <button class="hero-grid__show-all" type="button" (click)="openPhotoTour()">
+        <app-icon name="grid" [size]="14"></app-icon>
+        <span>Show all photos</span>
+      </button>
+    </section>
+
+    <!-- Body: two column layout -->
+    <div class="body-grid">
+      <div class="body-grid__main">
+
+        <section class="overview">
+          <h2 class="overview__type">{{ l.propertyType }} in {{ l.city }}, {{ l.country }}</h2>
+          <p class="overview__details">{{ guestSummary(l) }}</p>
+        </section>
+
+        <hr class="divider" />
+
+        <section class="favourite-banner" *ngIf="l.rare">
+          <div class="favourite-banner__badge">
+            <span>🌿</span>
+            <div>
+              <p class="favourite-banner__title">Guest favourite</p>
+              <p class="favourite-banner__subtitle">One of the most loved homes on Airbnb, according to guests</p>
+            </div>
+            <span>🌿</span>
+          </div>
+          <div class="favourite-banner__stats">
+            <span class="favourite-banner__rating">{{ l.rating.toFixed(2) }}</span>
+            <span class="favourite-banner__reviews">{{ l.reviewCount }}<br />Reviews</span>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <section class="host-row">
+          <img class="host-row__avatar" [src]="l.host.avatarUrl" [alt]="'Host ' + l.host.name" />
+          <div>
+            <p class="host-row__name">Hosted by {{ l.host.name }}</p>
+            <p class="host-row__meta">{{ l.host.yearsHosting }} years hosting</p>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <section class="description">
+          <p class="description__text" [class.description__text--clamped]="!isDescriptionExpanded()">
+            {{ l.description }}
+          </p>
+          <button class="link-button" type="button" (click)="toggleDescription()">
+            {{ isDescriptionExpanded() ? 'Show less' : 'Show more' }} <span class="link-button__chevron">›</span>
+          </button>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- Where you'll sleep -->
+        <section class="sleep">
+          <h3 class="section-title">Where you'll sleep</h3>
+          <div class="sleep__grid">
+            <article class="sleep__card" *ngFor="let room of l.sleepingArrangements">
+              <img [src]="room.imageUrl" [alt]="room.name" />
+              <p class="sleep__name">{{ room.name }}</p>
+              <p class="sleep__subtitle">{{ room.subtitle }}</p>
+            </article>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- Amenities -->
+        <section class="amenities" #amenitiesSection>
+          <h3 class="section-title">What this place offers</h3>
+          <ul class="amenities__list">
+            <li
+              class="amenities__item"
+              [class.amenities__item--unavailable]="!amenity.available"
+              *ngFor="let amenity of previewAmenities()"
+            >
+              <app-icon [name]="amenity.available ? 'grid' : 'close'" [size]="18"></app-icon>
+              {{ amenity.label }}
+            </li>
+          </ul>
+          <button class="secondary-button" type="button" (click)="openAmenitiesModal()">
+            Show all {{ l.amenityItems.length }} amenities
+          </button>
+        </section>
+      </div>
+
+      <!-- Sticky booking card: only spans Photos→Amenities, matching the reference -->
+      <aside class="booking-card">
+        <div class="booking-card__inner">
+          <div class="booking-card__discount" *ngIf="l.discountPercent > 0">
+            <span>🏷️ Get {{ l.discountPercent }}% off your next stay.<br /><a href="javascript:void(0)">Terms apply</a></span>
+            <button class="booking-card__claim" type="button">Claim</button>
+          </div>
+
+          <div class="booking-card__price-row">
+            <span class="booking-card__price">{{ formattedTotalPrice() }}</span>
+            <span class="booking-card__per-night">for {{ nights() }} nights</span>
+          </div>
+
+          <div class="booking-card__dates">
+            <div class="booking-card__field">
+              <span class="booking-card__field-label">CHECK-IN</span>
+              <span class="booking-card__field-value">{{ checkInDate() ? (checkInDate() | date: 'M/d/yyyy') : 'Add date' }}</span>
+            </div>
+            <div class="booking-card__field">
+              <span class="booking-card__field-label">CHECKOUT</span>
+              <span class="booking-card__field-value">{{ checkOutDate() ? (checkOutDate() | date: 'M/d/yyyy') : 'Add date' }}</span>
+            </div>
+          </div>
+          <div class="booking-card__field booking-card__field--full">
+            <span class="booking-card__field-label">GUESTS</span>
+            <span class="booking-card__field-value">{{ guestCount() }} guests</span>
+          </div>
+
+          <div class="booking-card__cancellation">Free cancellation before {{ l.cancellationDeadline }}</div>
+
+          <div class="reserve-button-wrap">
+            <button class="reserve-button" type="button" (click)="onReserveClick()">Reserve</button>
+            <span class="reserve-tooltip reserve-tooltip--card" *ngIf="isReserveTooltipVisible()">You won't be charged yet</span>
+          </div>
+          <p class="booking-card__hint">You won't be charged yet</p>
+
+          <a class="booking-card__report" href="javascript:void(0)">🚩 Report this listing</a>
+        </div>
+
+        <div class="booking-card__calendar-wrap">
+          <h3 class="section-title">{{ nights() }} nights in {{ l.city }}</h3>
+          <p class="booking-card__range-label" *ngIf="checkInDate() && checkOutDate()">
+            {{ checkInDate() | date: 'd MMM yyyy' }} - {{ checkOutDate() | date: 'd MMM yyyy' }}
+          </p>
+          <app-booking-calendar
+            [checkIn]="checkInDate()"
+            [checkOut]="checkOutDate()"
+            (rangeChange)="onRangeChange($event)"
+          ></app-booking-calendar>
+        </div>
+      </aside>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Reviews -->
+    <section class="reviews" #reviewsSection>
+          <div class="reviews__favourite">
+            <h3 class="reviews__favourite-title">Guest favourite</h3>
+            <p class="reviews__favourite-subtitle">
+              This home is a guest favourite based on ratings, reviews and reliability
+            </p>
+          </div>
+
+          <div class="reviews__breakdown">
+            <div class="reviews__overall">
+              <p class="reviews__breakdown-label">Overall rating</p>
+              <div class="reviews__bars">
+                <div class="reviews__bar-row" *ngFor="let pct of l.ratingBreakdown.starDistribution; let i = index">
+                  <span>{{ 5 - i }}</span>
+                  <div class="reviews__bar-track">
+                    <div class="reviews__bar-fill" [style.width]="starBarWidth(pct)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="reviews__metric">
+              <p class="reviews__breakdown-label">Cleanliness</p>
+              <p class="reviews__metric-value">{{ l.ratingBreakdown.cleanliness.toFixed(1) }}</p>
+            </div>
+            <div class="reviews__metric">
+              <p class="reviews__breakdown-label">Accuracy</p>
+              <p class="reviews__metric-value">{{ l.ratingBreakdown.accuracy.toFixed(1) }}</p>
+            </div>
+            <div class="reviews__metric">
+              <p class="reviews__breakdown-label">Check-in</p>
+              <p class="reviews__metric-value">{{ l.ratingBreakdown.checkIn.toFixed(1) }}</p>
+            </div>
+            <div class="reviews__metric">
+              <p class="reviews__breakdown-label">Communication</p>
+              <p class="reviews__metric-value">{{ l.ratingBreakdown.communication.toFixed(1) }}</p>
+            </div>
+            <div class="reviews__metric">
+              <p class="reviews__breakdown-label">Location</p>
+              <p class="reviews__metric-value">{{ l.ratingBreakdown.location.toFixed(1) }}</p>
+            </div>
+            <div class="reviews__metric">
+              <p class="reviews__breakdown-label">Value</p>
+              <p class="reviews__metric-value">{{ l.ratingBreakdown.value.toFixed(1) }}</p>
+            </div>
+          </div>
+
+          <div class="reviews__tags">
+            <span class="reviews__tag" *ngFor="let tag of l.reviewTags">
+              {{ tag.emoji }} {{ tag.label }} <strong>{{ tag.count }}</strong>
+            </span>
+          </div>
+
+          <div class="reviews__grid">
+            <article class="review-card" *ngFor="let review of l.reviews">
+              <div class="review-card__header">
+                <img *ngIf="review.avatarUrl" [src]="review.avatarUrl" [alt]="review.author" class="review-card__avatar" />
+                <div class="review-card__avatar review-card__avatar--fallback" *ngIf="!review.avatarUrl">
+                  {{ review.author.charAt(0) }}
+                </div>
+                <div>
+                  <p class="review-card__author">{{ review.author }}</p>
+                  <p class="review-card__date">{{ review.date }}</p>
+                </div>
+              </div>
+              <p class="review-card__comment" [class.review-card__comment--clamped]="!isReviewExpanded(review.id) && review.comment.length > 140">
+                {{ review.comment }}
+              </p>
+              <button
+                class="link-button"
+                type="button"
+                *ngIf="review.comment.length > 140"
+                (click)="toggleReviewExpanded(review.id)"
+              >
+                {{ isReviewExpanded(review.id) ? 'Show less' : 'Show more' }}
+              </button>
+            </article>
+          </div>
+
+          <button class="secondary-button secondary-button--block" type="button">
+            Show all {{ l.reviewCount }} reviews
+          </button>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- Location -->
+        <section class="location" #locationSection>
+          <h3 class="section-title">Where you'll be</h3>
+          <p class="location__address">{{ l.city }}, Goa, {{ l.country }}</p>
+
+          <div class="fake-map" aria-hidden="true">
+            <div class="fake-map__grid"></div>
+            <div class="fake-map__shape fake-map__shape--water"></div>
+            <div class="fake-map__shape fake-map__shape--park1"></div>
+            <div class="fake-map__shape fake-map__shape--park2"></div>
+            <div class="fake-map__pin"><app-icon name="grid" [size]="16"></app-icon></div>
+            <div class="fake-map__controls">
+              <button type="button" aria-label="Zoom in">+</button>
+              <button type="button" aria-label="Zoom out">−</button>
+            </div>
+          </div>
+
+          <p class="location__disclaimer">Exact location will be provided after booking.</p>
+
+          <h4 class="section-title section-title--sub">Neighbourhood highlights</h4>
+          <p class="location__highlights" [class.location__highlights--clamped]="!isNeighbourhoodExpanded()">
+            {{ l.neighbourhoodHighlights }}
+          </p>
+          <button class="link-button" type="button" (click)="toggleNeighbourhood()">
+            {{ isNeighbourhoodExpanded() ? 'Show less' : 'Show more' }} <span class="link-button__chevron">›</span>
+          </button>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- Meet your host -->
+        <section class="host">
+          <h3 class="section-title">Meet your host</h3>
+          <div class="host__layout">
+            <div class="host__card">
+              <div class="host__avatar-wrap">
+                <img [src]="l.host.avatarUrl" [alt]="l.host.name" class="host__avatar" />
+                <span class="host__verified">✓</span>
+              </div>
+              <p class="host__name">{{ l.host.name }}</p>
+              <p class="host__role">Host</p>
+              <div class="host__stat-row">
+                <div class="host__stat">
+                  <p class="host__stat-value">{{ l.host.hostReviewCount | number }}</p>
+                  <p class="host__stat-label">Reviews</p>
+                </div>
+                <div class="host__stat">
+                  <p class="host__stat-value">{{ l.host.hostRating.toFixed(2) }}<app-icon name="star" [size]="12"></app-icon></p>
+                  <p class="host__stat-label">Rating</p>
+                </div>
+                <div class="host__stat">
+                  <p class="host__stat-value">{{ l.host.yearsHosting }}</p>
+                  <p class="host__stat-label">Years hosting</p>
+                </div>
+              </div>
+              <p class="host__meta">📍 {{ l.host.bornDecade }}</p>
+              <p class="host__meta">🎓 Where I went to school: {{ l.host.school }}</p>
+            </div>
+
+            <div class="host__side">
+              <h4 class="section-title section-title--sub">Co-Hosts</h4>
+              <div class="host__cohosts">
+                <div class="host__cohost" *ngFor="let coHost of l.host.coHosts">
+                  <img *ngIf="coHost.avatarUrl" [src]="coHost.avatarUrl" [alt]="coHost.name" class="host__cohost-avatar" />
+                  <div class="host__cohost-avatar host__cohost-avatar--fallback" *ngIf="!coHost.avatarUrl">
+                    {{ coHost.name.charAt(0) }}
+                  </div>
+                  <span>{{ coHost.name }}</span>
+                </div>
+              </div>
+
+              <h4 class="section-title section-title--sub">Host details</h4>
+              <p class="host__detail">Response rate: {{ l.host.responseRatePercent }}%</p>
+              <p class="host__detail">Responds {{ l.host.responseTime }}</p>
+              <button class="secondary-button" type="button">Message host</button>
+
+              <p class="host__disclaimer">
+                <app-icon name="close" [size]="14"></app-icon>
+                To help protect your payment, always use Airbnb to send money and communicate with hosts.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <hr class="divider" />
+
+        <!-- Things to know -->
+        <section class="things-to-know">
+          <h3 class="section-title">Things to know</h3>
+          <div class="things-to-know__grid">
+            <div class="things-to-know__item">
+              <span class="things-to-know__icon">📅</span>
+              <p class="things-to-know__heading">Cancellation policy</p>
+              <p class="things-to-know__text">{{ l.cancellationPolicy }}</p>
+              <p class="things-to-know__text">Review this host's full policy for details.</p>
+              <a class="link-button" href="javascript:void(0)">Learn more</a>
+            </div>
+            <div class="things-to-know__item">
+              <span class="things-to-know__icon">🔍</span>
+              <p class="things-to-know__heading">House rules</p>
+              <p class="things-to-know__text" *ngFor="let rule of l.houseRules">{{ rule }}</p>
+              <a class="link-button" href="javascript:void(0)">Learn more</a>
+            </div>
+            <div class="things-to-know__item">
+              <span class="things-to-know__icon">🛡️</span>
+              <p class="things-to-know__heading">Safety &amp; property</p>
+              <p class="things-to-know__text" *ngFor="let item of l.safetyItems">{{ item }}</p>
+              <a class="link-button" href="javascript:void(0)">Learn more</a>
+            </div>
+          </div>
+        </section>
+
+    <!-- More stays nearby -->
+    <section class="nearby">
+      <div class="nearby__header">
+        <h3 class="section-title">More stays nearby</h3>
+        <div class="nearby__nav">
+          <button type="button" aria-label="Previous" (click)="scrollNearby(-1)">‹</button>
+          <button type="button" aria-label="Next" (click)="scrollNearby(1)">›</button>
+        </div>
+      </div>
+      <div class="nearby__scroll" #nearbyScroll>
+        <article class="nearby__card" *ngFor="let stay of l.nearbyListings">
+          <img [src]="stay.imageUrl" [alt]="stay.title" />
+          <p class="nearby__title">{{ stay.title }}</p>
+          <p class="nearby__meta">
+            {{ formatPrice(stay.price, stay.currency) }}
+            <span><app-icon name="star" [size]="11"></app-icon> {{ stay.rating.toFixed(2) }}</span>
+          </p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <app-photo-tour *ngIf="gallery.isPhotoTourOpen()"></app-photo-tour>
+  <app-lightbox *ngIf="gallery.isLightboxOpen()"></app-lightbox>
+  <app-amenities-modal
+    *ngIf="isAmenitiesModalOpen()"
+    [amenities]="l.amenityItems"
+    (close)="closeAmenitiesModal()"
+  ></app-amenities-modal>
+</main>

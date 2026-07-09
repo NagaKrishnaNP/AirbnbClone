@@ -1,0 +1,57 @@
+<div class="calendar">
+  <div class="calendar__month">
+    <div class="calendar__header">
+      <button class="calendar__nav" type="button" (click)="prevMonth()" aria-label="Previous month">&lsaquo;</button>
+      <span class="calendar__title">{{ monthLabel(leftMonth()) }}</span>
+      <span class="calendar__nav-spacer"></span>
+    </div>
+    <div class="calendar__weekdays">
+      <span *ngFor="let w of weekdays">{{ w }}</span>
+    </div>
+    <div class="calendar__days">
+      <button
+        type="button"
+        class="calendar__day"
+        *ngFor="let day of daysFor(leftMonth())"
+        [class.calendar__day--muted]="!day.inCurrentMonth"
+        [class.calendar__day--disabled]="day.disabled"
+        [class.calendar__day--start]="isStart(day.date)"
+        [class.calendar__day--end]="isEnd(day.date)"
+        [class.calendar__day--in-range]="isInRange(day.date)"
+        [disabled]="day.disabled || !day.inCurrentMonth"
+        (click)="selectDay(day)"
+      >
+        {{ day.date.getDate() }}
+      </button>
+    </div>
+  </div>
+
+  <div class="calendar__month">
+    <div class="calendar__header">
+      <span class="calendar__nav-spacer"></span>
+      <span class="calendar__title">{{ monthLabel(rightMonth) }}</span>
+      <button class="calendar__nav" type="button" (click)="nextMonth()" aria-label="Next month">&rsaquo;</button>
+    </div>
+    <div class="calendar__weekdays">
+      <span *ngFor="let w of weekdays">{{ w }}</span>
+    </div>
+    <div class="calendar__days">
+      <button
+        type="button"
+        class="calendar__day"
+        *ngFor="let day of daysFor(rightMonth)"
+        [class.calendar__day--muted]="!day.inCurrentMonth"
+        [class.calendar__day--disabled]="day.disabled"
+        [class.calendar__day--start]="isStart(day.date)"
+        [class.calendar__day--end]="isEnd(day.date)"
+        [class.calendar__day--in-range]="isInRange(day.date)"
+        [disabled]="day.disabled || !day.inCurrentMonth"
+        (click)="selectDay(day)"
+      >
+        {{ day.date.getDate() }}
+      </button>
+    </div>
+  </div>
+
+  <button class="calendar__clear" type="button" (click)="clear()">Clear dates</button>
+</div>
