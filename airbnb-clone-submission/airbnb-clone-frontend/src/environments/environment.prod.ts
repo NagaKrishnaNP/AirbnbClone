@@ -5,6 +5,6 @@ export const environment = {
   // Site) and backend (Web Service) get different domains, so this MUST be
   // the backend's full deployed URL, e.g.:
   // 'https://airbnb-clone-backend.onrender.com/api'
-  apiUrl: 'https://REPLACE-WITH-YOUR-BACKEND-URL.onrender.com/api',
+  apiUrl: 'https://airbnbclonesubmission.onrender.com/api',
   listingId: 'mirashya-ug10',
 };
